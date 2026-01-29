@@ -18,3 +18,5 @@ __pycache__/
 # Temporary
 *.log
 .jarvis-cancel
+log-**.jsonl
+log-**.html
