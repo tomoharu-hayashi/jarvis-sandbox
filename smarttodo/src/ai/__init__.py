@@ -1,4 +1,5 @@
 from src.ai.client import get_openai_client
+from src.ai.parser import ParserService, get_parser_service
 from src.ai.prompts import SUGGESTION_SYSTEM_PROMPT, build_suggestion_prompt
 from src.ai.suggestions import SuggestionService, get_suggestion_service
 
@@ -8,4 +9,6 @@ __all__ = [
     "build_suggestion_prompt",
     "SuggestionService",
     "get_suggestion_service",
+    "ParserService",
+    "get_parser_service",
 ]
