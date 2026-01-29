@@ -23,12 +23,12 @@ doctor: ## 開発に必要なコマンド/環境のざっくりチェック
 	@echo "ok: basic"
 
 .PHONY: deps
-deps: ## 依存導入（PJに合わせて実装）
-	@echo "Not defined (Makefile)"
+deps: ## 依存導入
+	@cd smarttodo && uv sync --all-extras
 
 .PHONY: run
-run: ## 実行（dev起動など）
-	@echo "Not defined (Makefile)"
+run: ## 開発サーバー起動
+	@cd smarttodo && uv run uvicorn src.main:app --reload
 
 .PHONY: env-local
 env-local: ## dotenvxで.env.local + .env を読み込んでコマンド実行（local優先）
@@ -43,16 +43,16 @@ env-global: ## bws globalプロジェクトの値を環境変数として注入�
 	@bash scripts/base/bws_global_run.sh -- $(CMD)
 
 .PHONY: test
-test: ## テスト
-	@echo "Not defined (Makefile)"
+test: ## テスト実行
+	@cd smarttodo && uv run pytest -v
 
 .PHONY: fmt
 fmt: ## フォーマット
-	@echo "Not defined (Makefile)"
+	@cd smarttodo && uv run ruff format .
 
 .PHONY: lint
 lint: ## リント/静的解析
-	@echo "Not defined (Makefile)"
+	@cd smarttodo && uv run ruff check --fix .
 
 .PHONY: clean
 clean: ## 生成物削除
