@@ -1,15 +1,19 @@
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from src.api.tasks import _tasks
 from src.main import app
+from src.services.firestore import InMemoryTaskRepository, reset_repository, set_repository
 
 
 @pytest.fixture
 async def client():
-    _tasks.clear()
+    # テスト用にインメモリリポジトリを設定
+    reset_repository()
+    repo = InMemoryTaskRepository()
+    set_repository(repo)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
+    reset_repository()
 
 
 # タスク作成 正常系テスト

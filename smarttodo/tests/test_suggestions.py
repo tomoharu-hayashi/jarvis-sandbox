@@ -7,16 +7,19 @@ from httpx import ASGITransport, AsyncClient
 
 from src.ai.prompts import SUGGESTION_SYSTEM_PROMPT, build_suggestion_prompt
 from src.ai.suggestions import SuggestionService, TaskSuggestion
-from src.api.tasks import _tasks
 from src.main import app
 from src.models.task import TaskPriority, TaskResponse, TaskStatus
+from src.services.firestore import InMemoryTaskRepository, reset_repository, set_repository
 
 
 @pytest.fixture
 async def client():
-    _tasks.clear()
+    reset_repository()
+    repo = InMemoryTaskRepository()
+    set_repository(repo)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
+    reset_repository()
 
 
 @pytest.fixture
@@ -224,13 +227,16 @@ class TestSuggestionsAPI:
         """GET /api/tasks/suggestions が動作する"""
         from src.ai.suggestions import get_suggestion_service
 
+        reset_repository()
+        repo = InMemoryTaskRepository()
+        set_repository(repo)
         app.dependency_overrides[get_suggestion_service] = lambda: mock_service
-        _tasks.clear()
 
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
             response = await ac.get("/api/tasks/suggestions")
 
         app.dependency_overrides.clear()
+        reset_repository()
 
         assert response.status_code == 200
         data = response.json()
@@ -242,13 +248,16 @@ class TestSuggestionsAPI:
         """limit パラメータが機能する"""
         from src.ai.suggestions import get_suggestion_service
 
+        reset_repository()
+        repo = InMemoryTaskRepository()
+        set_repository(repo)
         app.dependency_overrides[get_suggestion_service] = lambda: mock_service
-        _tasks.clear()
 
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
             await ac.get("/api/tasks/suggestions", params={"limit": 5})
 
         app.dependency_overrides.clear()
+        reset_repository()
 
         mock_service.get_suggestions.assert_called_once()
         call_args = mock_service.get_suggestions.call_args
@@ -269,13 +278,16 @@ class TestSuggestionsAPI:
         """DELETE /api/tasks/suggestions/cache が動作する"""
         from src.ai.suggestions import get_suggestion_service
 
+        reset_repository()
+        repo = InMemoryTaskRepository()
+        set_repository(repo)
         app.dependency_overrides[get_suggestion_service] = lambda: mock_service
-        _tasks.clear()
 
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
             response = await ac.delete("/api/tasks/suggestions/cache")
 
         app.dependency_overrides.clear()
+        reset_repository()
 
         assert response.status_code == 204
         mock_service.clear_cache.assert_called_once()

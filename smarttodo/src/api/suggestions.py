@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, Query
 
 from src.ai.suggestions import SuggestionResponse, SuggestionService, get_suggestion_service
-from src.api.tasks import _tasks
+from src.models.task import TaskResponse
+from src.services.firestore import get_repository
 
 router = APIRouter(prefix="/tasks/suggestions", tags=["suggestions"])
 
@@ -12,7 +13,10 @@ async def get_suggestions(
     service: SuggestionService = Depends(get_suggestion_service),
 ) -> SuggestionResponse:
     """過去のタスクを分析して、次にやるべきタスクを提案する"""
-    return await service.get_suggestions(_tasks, limit)
+    repo = get_repository()
+    items, _ = await repo.list(limit=100, offset=0, status=None, priority=None)
+    tasks = [TaskResponse(**item) for item in items]
+    return await service.get_suggestions(tasks, limit)
 
 
 @router.delete("/cache", status_code=204)
