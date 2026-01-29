@@ -1,53 +1,68 @@
-# jarvis-sandbox
+# SmartTodo
 
-JARVIS E2E テスト用のサンドボックスリポジトリ。
+AI アシスタント機能を搭載した次世代 Todo アプリ。
 
-## 目的
+## 特徴
 
-- JARVIS システムの hooks、状態管理、自動ループをテスト
-- Issue → 実装 → PR → マージの完全フローを検証
-- Claude Code の `-p` モードでの動作確認
+- **AI タスク提案**: 過去のタスクパターンから次にやるべきことを提案
+- **自然言語入力**: 「明日の会議の準備」と入力するだけでタスク作成
+- **スマートリマインダー**: ユーザーの行動パターンを学習して最適なタイミングで通知
+- **優先度自動判定**: タスクの緊急度・重要度を AI が自動判定
+
+## 技術スタック
+
+- **Backend**: Python (FastAPI)
+- **Frontend**: React + TypeScript
+- **Database**: PostgreSQL
+- **AI/ML**: OpenAI API, LangChain
+- **Infrastructure**: Docker, AWS
 
 ## セットアップ
 
 ```bash
-# dev-tools からテンプレートを適用
-bash <(gh api repos/thayashi-naruse/dev-tools/contents/setup.sh --jq '.content' | base64 -d) -i
+# 依存関係のインストール
+make deps
+
+# 開発サーバー起動
+make run
+
+# テスト実行
+make test
 ```
 
-## テスト実行
-
-### 手動テスト（別ターミナル）
+## 開発
 
 ```bash
-cd /path/to/jarvis-sandbox
+# フォーマット
+make fmt
 
-# 基本的な -p モードテスト
-claude -p "src/main.py の内容を説明して" --allowedTools "Read"
-
-# JARVIS ループテスト
-claude -p "/jarvis_agent Issue #1 を実装" --dangerously-skip-permissions
+# リント
+make lint
 ```
 
-### 観察
-
-```bash
-# 状態ファイルを監視
-watch -n 1 cat .prompts/jarvis-state.local.md
-
-# hooks ログを監視
-tail -f /tmp/jarvis_hook.log
-```
-
-## 構造
+## ディレクトリ構成
 
 ```
-jarvis-sandbox/
-├── .claude/              # Claude Code 設定 & hooks
-├── .prompts/             # JARVIS 状態 & エージェントプロンプト
-├── scripts/base/         # 共有スクリプト
-├── src/                  # テスト用ダミーコード
-│   ├── main.py
-│   └── test_main.py
-└── Makefile
+smarttodo/
+├── src/
+│   ├── main.py          # アプリケーションエントリポイント
+│   ├── api/             # API エンドポイント
+│   ├── models/          # データモデル
+│   ├── services/        # ビジネスロジック
+│   └── ai/              # AI 機能
+├── frontend/            # React フロントエンド
+├── tests/               # テストコード
+└── docs/                # ドキュメント
 ```
+
+## ロードマップ
+
+- [x] 基本的な Todo CRUD
+- [ ] AI タスク提案機能
+- [ ] 自然言語入力
+- [ ] スマートリマインダー
+- [ ] モバイルアプリ対応
+
+## ライセンス
+
+MIT
