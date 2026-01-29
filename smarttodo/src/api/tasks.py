@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Query, status
+from uuid import UUID
+
+from fastapi import APIRouter, HTTPException, Query, status
 
 from src.models.task import (
     TaskCreate,
@@ -6,12 +8,21 @@ from src.models.task import (
     TaskPriority,
     TaskResponse,
     TaskStatus,
+    TaskUpdate,
 )
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 # インメモリでタスクを保持（後でDBに置き換え予定）
 _tasks: list[TaskResponse] = []
+
+
+def _find_task_index(task_id: UUID) -> int | None:
+    """タスクのインデックスを検索"""
+    for i, task in enumerate(_tasks):
+        if task.id == task_id:
+            return i
+    return None
 
 
 @router.get("", response_model=TaskListResponse)
@@ -41,3 +52,36 @@ async def create_task(task: TaskCreate) -> TaskResponse:
     response = TaskResponse.from_task_create(task)
     _tasks.append(response)
     return response
+
+
+@router.get("/{task_id}", response_model=TaskResponse)
+async def get_task(task_id: UUID) -> TaskResponse:
+    """個別タスクを取得する"""
+    index = _find_task_index(task_id)
+    if index is None:
+        raise HTTPException(status_code=404, detail="タスクが見つかりません")
+    return _tasks[index]
+
+
+@router.put("/{task_id}", response_model=TaskResponse)
+async def update_task(task_id: UUID, task_update: TaskUpdate) -> TaskResponse:
+    """タスクを更新する（部分更新対応）"""
+    index = _find_task_index(task_id)
+    if index is None:
+        raise HTTPException(status_code=404, detail="タスクが見つかりません")
+
+    current = _tasks[index]
+    update_data = task_update.model_dump(exclude_unset=True)
+
+    updated = current.model_copy(update=update_data)
+    _tasks[index] = updated
+    return updated
+
+
+@router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_task(task_id: UUID) -> None:
+    """タスクを削除する"""
+    index = _find_task_index(task_id)
+    if index is None:
+        raise HTTPException(status_code=404, detail="タスクが見つかりません")
+    _tasks.pop(index)

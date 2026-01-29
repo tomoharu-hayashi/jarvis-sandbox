@@ -205,3 +205,247 @@ class TestListTasksValidation:
         """不正な優先度でエラー"""
         response = await client.get("/api/tasks", params={"priority": "invalid"})
         assert response.status_code == 422
+
+
+# 個別タスク取得 正常系テスト
+class TestGetTaskSuccess:
+    async def test_get_task(self, client: AsyncClient):
+        """タスクを個別取得"""
+        create_response = await client.post("/api/tasks", json={"title": "テストタスク"})
+        task_id = create_response.json()["id"]
+
+        response = await client.get(f"/api/tasks/{task_id}")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == task_id
+        assert data["title"] == "テストタスク"
+
+    async def test_get_task_with_all_fields(self, client: AsyncClient):
+        """全フィールド指定のタスクを個別取得"""
+        create_response = await client.post(
+            "/api/tasks",
+            json={
+                "title": "詳細タスク",
+                "description": "説明文",
+                "status": "in_progress",
+                "priority": "high",
+            },
+        )
+        task_id = create_response.json()["id"]
+
+        response = await client.get(f"/api/tasks/{task_id}")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["title"] == "詳細タスク"
+        assert data["description"] == "説明文"
+        assert data["status"] == "in_progress"
+        assert data["priority"] == "high"
+
+
+# 個別タスク取得 異常系テスト
+class TestGetTaskError:
+    async def test_get_task_not_found(self, client: AsyncClient):
+        """存在しないタスクで404"""
+        response = await client.get("/api/tasks/00000000-0000-0000-0000-000000000000")
+        assert response.status_code == 404
+        assert response.json()["detail"] == "タスクが見つかりません"
+
+    async def test_get_task_invalid_id(self, client: AsyncClient):
+        """不正なIDで422"""
+        response = await client.get("/api/tasks/invalid-id")
+        assert response.status_code == 422
+
+
+# タスク更新 正常系テスト
+class TestUpdateTaskSuccess:
+    async def test_update_task_title(self, client: AsyncClient):
+        """タイトルのみ更新"""
+        create_response = await client.post("/api/tasks", json={"title": "元のタイトル"})
+        task_id = create_response.json()["id"]
+
+        response = await client.put(f"/api/tasks/{task_id}", json={"title": "新しいタイトル"})
+        assert response.status_code == 200
+        data = response.json()
+        assert data["title"] == "新しいタイトル"
+        assert data["id"] == task_id
+
+    async def test_update_task_description(self, client: AsyncClient):
+        """説明のみ更新"""
+        create_response = await client.post(
+            "/api/tasks", json={"title": "タスク", "description": "元の説明"}
+        )
+        task_id = create_response.json()["id"]
+
+        response = await client.put(f"/api/tasks/{task_id}", json={"description": "新しい説明"})
+        assert response.status_code == 200
+        data = response.json()
+        assert data["description"] == "新しい説明"
+        assert data["title"] == "タスク"
+
+    async def test_update_task_status(self, client: AsyncClient):
+        """ステータス更新"""
+        create_response = await client.post("/api/tasks", json={"title": "タスク"})
+        task_id = create_response.json()["id"]
+
+        response = await client.put(f"/api/tasks/{task_id}", json={"status": "completed"})
+        assert response.status_code == 200
+        assert response.json()["status"] == "completed"
+
+    async def test_update_task_priority(self, client: AsyncClient):
+        """優先度更新"""
+        create_response = await client.post("/api/tasks", json={"title": "タスク"})
+        task_id = create_response.json()["id"]
+
+        response = await client.put(f"/api/tasks/{task_id}", json={"priority": "high"})
+        assert response.status_code == 200
+        assert response.json()["priority"] == "high"
+
+    async def test_update_task_multiple_fields(self, client: AsyncClient):
+        """複数フィールド同時更新"""
+        create_response = await client.post("/api/tasks", json={"title": "タスク"})
+        task_id = create_response.json()["id"]
+
+        response = await client.put(
+            f"/api/tasks/{task_id}",
+            json={"title": "更新後", "status": "in_progress", "priority": "low"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["title"] == "更新後"
+        assert data["status"] == "in_progress"
+        assert data["priority"] == "low"
+
+    async def test_update_task_empty_body(self, client: AsyncClient):
+        """空のボディで更新（変更なし）"""
+        create_response = await client.post(
+            "/api/tasks", json={"title": "タスク", "description": "説明"}
+        )
+        task_id = create_response.json()["id"]
+
+        response = await client.put(f"/api/tasks/{task_id}", json={})
+        assert response.status_code == 200
+        data = response.json()
+        assert data["title"] == "タスク"
+        assert data["description"] == "説明"
+
+    async def test_update_task_preserves_created_at(self, client: AsyncClient):
+        """更新時にcreated_atは変わらない"""
+        create_response = await client.post("/api/tasks", json={"title": "タスク"})
+        created_at = create_response.json()["created_at"]
+        task_id = create_response.json()["id"]
+
+        response = await client.put(f"/api/tasks/{task_id}", json={"title": "更新後"})
+        assert response.json()["created_at"] == created_at
+
+
+# タスク更新 異常系テスト
+class TestUpdateTaskError:
+    async def test_update_task_not_found(self, client: AsyncClient):
+        """存在しないタスクで404"""
+        response = await client.put(
+            "/api/tasks/00000000-0000-0000-0000-000000000000", json={"title": "更新"}
+        )
+        assert response.status_code == 404
+        assert response.json()["detail"] == "タスクが見つかりません"
+
+    async def test_update_task_invalid_id(self, client: AsyncClient):
+        """不正なIDで422"""
+        response = await client.put("/api/tasks/invalid-id", json={"title": "更新"})
+        assert response.status_code == 422
+
+    async def test_update_task_empty_title(self, client: AsyncClient):
+        """空のタイトルでエラー"""
+        create_response = await client.post("/api/tasks", json={"title": "タスク"})
+        task_id = create_response.json()["id"]
+
+        response = await client.put(f"/api/tasks/{task_id}", json={"title": ""})
+        assert response.status_code == 422
+
+    async def test_update_task_too_long_title(self, client: AsyncClient):
+        """長すぎるタイトルでエラー"""
+        create_response = await client.post("/api/tasks", json={"title": "タスク"})
+        task_id = create_response.json()["id"]
+
+        response = await client.put(f"/api/tasks/{task_id}", json={"title": "a" * 201})
+        assert response.status_code == 422
+
+    async def test_update_task_too_long_description(self, client: AsyncClient):
+        """長すぎる説明でエラー"""
+        create_response = await client.post("/api/tasks", json={"title": "タスク"})
+        task_id = create_response.json()["id"]
+
+        response = await client.put(f"/api/tasks/{task_id}", json={"description": "a" * 1001})
+        assert response.status_code == 422
+
+    async def test_update_task_invalid_status(self, client: AsyncClient):
+        """不正なステータスでエラー"""
+        create_response = await client.post("/api/tasks", json={"title": "タスク"})
+        task_id = create_response.json()["id"]
+
+        response = await client.put(f"/api/tasks/{task_id}", json={"status": "invalid"})
+        assert response.status_code == 422
+
+    async def test_update_task_invalid_priority(self, client: AsyncClient):
+        """不正な優先度でエラー"""
+        create_response = await client.post("/api/tasks", json={"title": "タスク"})
+        task_id = create_response.json()["id"]
+
+        response = await client.put(f"/api/tasks/{task_id}", json={"priority": "invalid"})
+        assert response.status_code == 422
+
+
+# タスク削除 正常系テスト
+class TestDeleteTaskSuccess:
+    async def test_delete_task(self, client: AsyncClient):
+        """タスクを削除"""
+        create_response = await client.post("/api/tasks", json={"title": "削除対象"})
+        task_id = create_response.json()["id"]
+
+        response = await client.delete(f"/api/tasks/{task_id}")
+        assert response.status_code == 204
+
+        # 削除後は取得できない
+        get_response = await client.get(f"/api/tasks/{task_id}")
+        assert get_response.status_code == 404
+
+    async def test_delete_task_from_multiple(self, client: AsyncClient):
+        """複数タスクから一つを削除"""
+        await client.post("/api/tasks", json={"title": "タスク1"})
+        create_response = await client.post("/api/tasks", json={"title": "タスク2"})
+        await client.post("/api/tasks", json={"title": "タスク3"})
+        task_id = create_response.json()["id"]
+
+        await client.delete(f"/api/tasks/{task_id}")
+
+        # 一覧から削除されている
+        list_response = await client.get("/api/tasks")
+        titles = [item["title"] for item in list_response.json()["items"]]
+        assert "タスク2" not in titles
+        assert "タスク1" in titles
+        assert "タスク3" in titles
+        assert list_response.json()["total"] == 2
+
+
+# タスク削除 異常系テスト
+class TestDeleteTaskError:
+    async def test_delete_task_not_found(self, client: AsyncClient):
+        """存在しないタスクで404"""
+        response = await client.delete("/api/tasks/00000000-0000-0000-0000-000000000000")
+        assert response.status_code == 404
+        assert response.json()["detail"] == "タスクが見つかりません"
+
+    async def test_delete_task_invalid_id(self, client: AsyncClient):
+        """不正なIDで422"""
+        response = await client.delete("/api/tasks/invalid-id")
+        assert response.status_code == 422
+
+    async def test_delete_task_twice(self, client: AsyncClient):
+        """同じタスクを2回削除で404"""
+        create_response = await client.post("/api/tasks", json={"title": "削除対象"})
+        task_id = create_response.json()["id"]
+
+        response1 = await client.delete(f"/api/tasks/{task_id}")
+        assert response1.status_code == 204
+
+        response2 = await client.delete(f"/api/tasks/{task_id}")
+        assert response2.status_code == 404

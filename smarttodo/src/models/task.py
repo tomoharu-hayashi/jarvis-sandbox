@@ -55,6 +55,18 @@ class TaskResponse(BaseModel):
         )
 
 
+class TaskUpdate(BaseModel):
+    """タスク更新リクエスト（部分更新対応）"""
+
+    title: str | None = Field(
+        default=None, min_length=1, max_length=200, description="タスクのタイトル"
+    )
+    description: str | None = Field(default=None, max_length=1000, description="タスクの詳細説明")
+    due_date: datetime | None = Field(default=None, description="期限日時")
+    status: TaskStatus | None = Field(default=None, description="ステータス")
+    priority: TaskPriority | None = Field(default=None, description="優先度")
+
+
 class TaskListResponse(BaseModel):
     """タスク一覧レスポンス"""
 
