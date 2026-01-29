@@ -1,0 +1,56 @@
+{
+	"hooks": {
+		"UserPromptSubmit": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/base/jarvis_prompt_arm.sh\""
+					},
+					{
+						"type": "command",
+						"command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/base/make_help_inject.py"
+					},
+					{
+						"type": "command",
+						"command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/base/trust_hook.py"
+					},
+					{
+						"type": "command",
+						"command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/base/brain_inject.py\""
+					}
+				]
+			}
+		],
+		"PostToolUse": [
+			{
+				"matcher": "Write|Edit",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "cd \"$CLAUDE_PROJECT_DIR\" && make fmt lint"
+					}
+				]
+			},
+			{
+				"matcher": "Bash",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/base/ci_wait_after_push.sh\""
+					}
+				]
+			}
+		],
+		"Stop": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/base/jarvis_autoloop.sh\""
+					}
+				]
+			}
+		]
+	}
+}
