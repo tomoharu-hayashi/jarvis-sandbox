@@ -1,11 +1,43 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Query, status
 
-from src.models.task import TaskCreate, TaskResponse
+from src.models.task import (
+    TaskCreate,
+    TaskListResponse,
+    TaskPriority,
+    TaskResponse,
+    TaskStatus,
+)
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
+
+# インメモリでタスクを保持（後でDBに置き換え予定）
+_tasks: list[TaskResponse] = []
+
+
+@router.get("", response_model=TaskListResponse)
+async def list_tasks(
+    limit: int = Query(default=20, ge=1, le=100, description="取得件数（1-100）"),
+    offset: int = Query(default=0, ge=0, description="取得開始位置"),
+    status: TaskStatus | None = Query(default=None, description="ステータスでフィルタ"),
+    priority: TaskPriority | None = Query(default=None, description="優先度でフィルタ"),
+) -> TaskListResponse:
+    """タスク一覧を取得する"""
+    filtered = _tasks
+
+    if status is not None:
+        filtered = [t for t in filtered if t.status == status]
+    if priority is not None:
+        filtered = [t for t in filtered if t.priority == priority]
+
+    total = len(filtered)
+    items = filtered[offset : offset + limit]
+
+    return TaskListResponse(items=items, total=total, limit=limit, offset=offset)
 
 
 @router.post("", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
 async def create_task(task: TaskCreate) -> TaskResponse:
     """タスクを作成する"""
-    return TaskResponse.from_task_create(task)
+    response = TaskResponse.from_task_create(task)
+    _tasks.append(response)
+    return response
