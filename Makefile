@@ -20,15 +20,17 @@ help: ## コマンド一覧
 .PHONY: doctor
 doctor: ## 開発に必要なコマンド/環境のざっくりチェック
 	@command -v git >/dev/null || (echo "missing: git" && exit 1)
-	@echo "ok: basic"
+	@command -v uv >/dev/null || (echo "missing: uv" && exit 1)
+	@command -v ruff >/dev/null || (echo "missing: ruff" && exit 1)
+	@echo "ok: all tools available"
 
 .PHONY: deps
 deps: ## 依存導入（PJに合わせて実装）
-	@echo "Not defined (Makefile)"
+	uv sync
 
 .PHONY: run
 run: ## 実行（dev起動など）
-	@echo "Not defined (Makefile)"
+	uv run uvicorn src.main:app --reload --port 8000
 
 .PHONY: env-local
 env-local: ## dotenvxで.env.local + .env を読み込んでコマンド実行（local優先）
@@ -44,21 +46,21 @@ env-global: ## bws globalプロジェクトの値を環境変数として注入�
 
 .PHONY: test
 test: ## テスト
-	@echo "Not defined (Makefile)"
+	uv run pytest -v
 
 .PHONY: fmt
 fmt: ## フォーマット
-	@echo "Not defined (Makefile)"
+	uv run ruff format src tests
 
 .PHONY: lint
 lint: ## リント/静的解析
-	@echo "Not defined (Makefile)"
+	uv run ruff check src tests --fix
 
 .PHONY: clean
 clean: ## 生成物削除
-	@rm -rf .tmp .cache dist build coverage 2>/dev/null || true
+	@rm -rf .tmp .cache dist build coverage .pytest_cache .ruff_cache __pycache__ 2>/dev/null || true
 	@find . -path "./.git" -prune -o -name ".DS_Store" -type f -delete
-	@find . -path "./.git" -prune -o -type d -empty -delete
+	@find . -path "./.git" -prune -o -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 
 .PHONY: pr-review
 pr-review: ## PRのレビュー/コメントを全取得
@@ -80,16 +82,3 @@ pr-merge: ## PRを即時マージ
 # ============================================================================
 # LOCAL: プロジェクト固有コマンド（自由に追加・変更可）
 # ============================================================================
-# Example:
-# .PHONY: install-api-client
-# install-api-client: ## APIクライアント導入
-# 	@echo "Not defined (Makefile)"
-#
-# .PHONY: build
-# build: ## ビルド
-# 	@echo "Not defined (Makefile)"
-#
-# コマンドが10行以上の場合 scripts/ に逃がす:
-# .PHONY: deploy
-# deploy: ## デプロイ
-# 	@bash scripts/deploy.sh

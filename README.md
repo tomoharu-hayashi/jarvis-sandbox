@@ -11,11 +11,14 @@ AI アシスタント機能を搭載した次世代 Todo アプリ。
 
 ## 技術スタック
 
-- **Backend**: Python (FastAPI)
-- **Frontend**: React + TypeScript
-- **Database**: PostgreSQL
-- **AI/ML**: OpenAI API, LangChain
-- **Infrastructure**: Docker, AWS
+- **Backend**: Python + FastAPI
+- **Frontend**: Next.js (TypeScript)
+- **Database**: Firebase Firestore
+- **AI**: OpenAI API
+- **Infrastructure**: Vercel
+- **Package Manager**: uv
+- **Formatter/Linter**: ruff
+- **Test**: pytest
 
 ## セットアップ
 
@@ -45,14 +48,14 @@ make lint
 ```
 smarttodo/
 ├── src/
-│   ├── main.py          # アプリケーションエントリポイント
+│   ├── main.py          # FastAPI アプリケーション
 │   ├── api/             # API エンドポイント
-│   ├── models/          # データモデル
+│   ├── models/          # Pydantic モデル
 │   ├── services/        # ビジネスロジック
 │   └── ai/              # AI 機能
-├── frontend/            # React フロントエンド
-├── tests/               # テストコード
-└── docs/                # ドキュメント
+├── tests/               # pytest テスト
+├── pyproject.toml       # プロジェクト設定
+└── Makefile
 ```
 
 ## ロードマップ
@@ -61,7 +64,6 @@ smarttodo/
 - [ ] AI タスク提案機能
 - [ ] 自然言語入力
 - [ ] スマートリマインダー
-- [ ] モバイルアプリ対応
 
 ## ライセンス
 
