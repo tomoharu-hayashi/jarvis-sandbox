@@ -54,3 +54,16 @@ export interface ParseResponse {
   original_text: string;
   parsed: ParsedTask;
 }
+
+// タスク提案
+export interface TaskSuggestion {
+  title: string;
+  reason: string;
+  priority: TaskPriority;
+}
+
+// タスク提案レスポンス
+export interface SuggestionsResponse {
+  suggestions: TaskSuggestion[];
+  cached: boolean;
+}
