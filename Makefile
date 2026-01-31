@@ -64,6 +64,10 @@ test: test-api ## テスト実行（全体）
 test-api: ## テスト実行（API）
 	@cd smarttodo && uv run pytest tests/ -v
 
+.PHONY: test-e2e
+test-e2e: ## E2Eテスト実行（Playwright）
+	@cd frontend && npm run test:e2e
+
 .PHONY: fmt
 fmt: fmt-api ## フォーマット（全体）
 
