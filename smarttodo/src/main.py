@@ -7,6 +7,13 @@ from src.api.tasks import router as tasks_router
 
 app = FastAPI(title="SmartTodo", description="AI powered todo application", version="0.1.0")
 
+
+@app.get("/health")
+async def health_check():
+    """ヘルスチェックエンドポイント（Cloud Run用）"""
+    return {"status": "healthy", "version": "0.1.0"}
+
+
 # CORS設定（開発用）
 app.add_middleware(
     CORSMiddleware,
