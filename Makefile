@@ -23,12 +23,27 @@ doctor: ## 開発に必要なコマンド/環境のざっくりチェック
 	@echo "ok: basic"
 
 .PHONY: deps
-deps: ## 依存導入
+deps: deps-api deps-web ## 依存導入（全体）
+
+.PHONY: deps-api
+deps-api: ## 依存導入（API）
 	@cd smarttodo && uv sync --all-extras
 
+.PHONY: deps-web
+deps-web: ## 依存導入（Web）
+	@cd frontend && npm install
+
 .PHONY: run
-run: ## 開発サーバー起動
+run: ## 開発サーバー起動（API + Web並列）
+	@make run-api & make run-web & wait
+
+.PHONY: run-api
+run-api: ## APIサーバー起動
 	@cd smarttodo && uv run uvicorn src.main:app --reload
+
+.PHONY: run-web
+run-web: ## Webサーバー起動（ポート3001）
+	@cd frontend && npm run dev -- -p 3001
 
 .PHONY: env-local
 env-local: ## dotenvxで.env.local + .env を読み込んでコマンド実行（local優先）
@@ -43,16 +58,33 @@ env-global: ## bws globalプロジェクトの値を環境変数として注入�
 	@bash scripts/base/bws_global_run.sh -- $(CMD)
 
 .PHONY: test
-test: ## テスト実行
+test: test-api ## テスト実行（全体）
+
+.PHONY: test-api
+test-api: ## テスト実行（API）
 	@cd smarttodo && uv run pytest tests/ -v
 
 .PHONY: fmt
-fmt: ## フォーマット
+fmt: fmt-api ## フォーマット（全体）
+
+.PHONY: fmt-api
+fmt-api: ## フォーマット（API）
 	@cd smarttodo && uv run ruff format .
 
 .PHONY: lint
-lint: ## リント/静的解析
+lint: lint-api lint-web ## リント/静的解析（全体）
+
+.PHONY: lint-api
+lint-api: ## リント（API）
 	@cd smarttodo && uv run ruff check . && uv run ruff format --check .
+
+.PHONY: lint-web
+lint-web: ## リント（Web）
+	@cd frontend && npm run lint
+
+.PHONY: build-web
+build-web: ## ビルド（Web）
+	@cd frontend && npm run build
 
 .PHONY: clean
 clean: ## 生成物削除

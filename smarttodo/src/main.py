@@ -1,10 +1,20 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from src.api.parser import router as parser_router
 from src.api.suggestions import router as suggestions_router
 from src.api.tasks import router as tasks_router
 
 app = FastAPI(title="SmartTodo", description="AI powered todo application", version="0.1.0")
+
+# CORS設定（開発用）
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # パス優先度: parse, suggestions を先に登録（/api/tasks/{task_id}より優先）
 app.include_router(parser_router, prefix="/api")
