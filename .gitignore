@@ -2,6 +2,12 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+.venv/
+.ruff_cache/
+
+# Node.js
+node_modules/
+.next/
 
 # Environment
 .env

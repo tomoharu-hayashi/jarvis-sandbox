@@ -11,6 +11,7 @@ AI アシスト付きのシンプルなタスク管理 Web アプリ。
 
 ## 技術スタック
 
+- **Frontend**: Next.js 16 (App Router) + TypeScript + Tailwind CSS + shadcn/ui
 - **Backend**: FastAPI + Python 3.11+
 - **Database**: Firebase Firestore
 - **AI**: OpenAI GPT-4
@@ -22,8 +23,8 @@ AI アシスト付きのシンプルなタスク管理 Web アプリ。
 
 - [x] タスク CRUD API（作成・表示・更新・削除）
 - [x] Firebase Firestore による永続化
-- [ ] シンプルなリスト UI
-- [ ] 完了/未完了の切り替え
+- [x] シンプルなリスト UI
+- [x] 完了/未完了の切り替え
 
 ### Phase 2: AI 機能
 
@@ -34,10 +35,17 @@ AI アシスト付きのシンプルなタスク管理 Web アプリ。
 ## 開発
 
 ```bash
-make deps    # 依存インストール
-make run     # 開発サーバー起動
-make test    # テスト実行
-make lint    # リント
+make deps        # 依存インストール（全体）
+make deps-api    # 依存インストール（API）
+make deps-web    # 依存インストール（Web）
+
+make run         # 開発サーバー起動（API + Web並列）
+make run-api     # APIサーバー起動（ポート8000）
+make run-web     # Webサーバー起動（ポート3001）
+
+make test        # テスト実行
+make lint        # リント
+make build-web   # Webビルド
 ```
 
 ## 環境変数
@@ -47,6 +55,7 @@ make lint    # リント
 | `USE_FIRESTORE` | `true`で Firestore 使用、それ以外でインメモリ | No |
 | `GOOGLE_APPLICATION_CREDENTIALS` | Firebase サービスアカウント JSON パス | Firestore 使用時 |
 | `OPENAI_API_KEY` | OpenAI API キー | AI 機能使用時 |
+| `NEXT_PUBLIC_API_URL` | API のベース URL（デフォルト: <http://localhost:8000）> | No |
 
 ## ライセンス
 
