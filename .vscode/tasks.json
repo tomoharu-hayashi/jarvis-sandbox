@@ -1,0 +1,29 @@
+{
+	"version": "2.0.0",
+
+	"tasks": [
+		{
+			"label": "code2prompt",
+			"type": "shell",
+			"command": "code2prompt",
+			"args": [
+				"--exclude",
+				"\"**/*.md\"",
+				"--exclude",
+				"uv.lock",
+				"--exclude",
+				"bun.lockb",
+				"--exclude",
+				"requirements.txt",
+				"-O",
+				".cursor/code2prompt.md",
+				"."
+			]
+		},
+		{
+			"label": ".DS_Storeファイルと空ディレクトリの削除",
+			"type": "shell",
+			"command": "find . -path \"./.git\" -prune -o -name \".DS_Store\" -type f -delete && find . -path \"./.git\" -prune -o -type d -empty -delete"
+		}
+	]
+}
