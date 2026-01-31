@@ -50,12 +50,46 @@ make build-web   # Webビルド
 
 ## 環境変数
 
+**API（Cloud Run）**:
+
 | 変数名 | 説明 | 必須 |
 |--------|------|------|
 | `USE_FIRESTORE` | `true`で Firestore 使用、それ以外でインメモリ | No |
 | `GOOGLE_APPLICATION_CREDENTIALS` | Firebase サービスアカウント JSON パス | Firestore 使用時 |
 | `OPENAI_API_KEY` | OpenAI API キー | AI 機能使用時 |
-| `NEXT_PUBLIC_API_URL` | API のベース URL（デフォルト: <http://localhost:8000）> | No |
+| `CORS_ORIGINS` | 許可するオリジン（カンマ区切り） | 本番時 |
+
+**Frontend（Vercel）**:
+
+| 変数名 | 説明 | 必須 |
+|--------|------|------|
+| `NEXT_PUBLIC_API_URL` | API のベース URL（デフォルト: <http://localhost:8000）> | 本番時 |
+
+## デプロイ
+
+**Frontend（Vercel）**:
+
+1. Vercel にプロジェクトをインポート
+2. ルートディレクトリを `frontend` に設定
+3. 環境変数 `NEXT_PUBLIC_API_URL` に Cloud Run の API URL を設定
+
+**API（Cloud Run）**:
+
+1. GCP プロジェクトを作成し、Firestore を有効化
+2. Cloud Run にデプロイ:
+
+```bash
+cd smarttodo
+gcloud run deploy smarttodo-api \
+  --source . \
+  --region asia-northeast1 \
+  --allow-unauthenticated \
+  --set-env-vars "USE_FIRESTORE=true,CORS_ORIGINS=https://your-app.vercel.app"
+```
+
+1. シークレットを設定（Secret Manager 推奨）:
+   - `OPENAI_API_KEY`
+   - `GOOGLE_APPLICATION_CREDENTIALS`
 
 ## ライセンス
 
