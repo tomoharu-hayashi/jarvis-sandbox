@@ -65,7 +65,9 @@ jobs:
         working-directory: smarttodo
 
       - name: Install frontend dependencies
-        run: npm ci
+        # npm ci だとmacOS用のlightningcssネイティブモジュールしかないため、
+        # Linux環境では npm install で再解決が必要
+        run: npm install
 
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
