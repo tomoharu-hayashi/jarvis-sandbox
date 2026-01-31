@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TaskList, TaskForm } from "@/components/tasks";
+import { SuggestionsPanel } from "@/components/suggestions";
 import { fetchTasks } from "@/lib/api";
 import type { Task } from "@/lib/types";
 
@@ -39,6 +40,8 @@ export default function Home() {
           </CardHeader>
           <CardContent className="space-y-6">
             <TaskForm onTaskCreated={loadTasks} />
+
+            <SuggestionsPanel onTaskCreated={loadTasks} />
 
             {isLoading ? (
               <div className="text-center py-8 text-gray-500">読み込み中...</div>

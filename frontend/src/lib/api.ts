@@ -6,6 +6,7 @@ import type {
   TaskPriority,
   TaskUpdate,
   ParseResponse,
+  SuggestionsResponse,
 } from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -88,6 +89,22 @@ export async function parseTaskText(text: string): Promise<ParseResponse> {
 
   if (!res.ok) {
     throw new Error(`Failed to parse task: ${res.status}`);
+  }
+
+  return res.json();
+}
+
+// タスク提案を取得
+export async function fetchSuggestions(
+  limit: number = 3
+): Promise<SuggestionsResponse> {
+  const res = await fetch(
+    `${API_BASE_URL}/api/tasks/suggestions?limit=${limit}`,
+    { cache: "no-store" }
+  );
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch suggestions: ${res.status}`);
   }
 
   return res.json();
