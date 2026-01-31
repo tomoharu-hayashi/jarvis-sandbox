@@ -153,3 +153,147 @@ test.describe("タスク管理", () => {
     expect(verifyResponse.status()).toBe(404);
   });
 });
+
+test.describe("期限表示", () => {
+  test("期限切れタスクは赤色で表示される", async ({ page, request }) => {
+    const prefix = "[E2E-期限切れ]";
+    await cleanupTestTasks(request, prefix);
+
+    // 期限切れのタスクを作成（昨日）
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const createResponse = await request.post(`${API_URL}/api/tasks`, {
+      data: {
+        title: `${prefix} 期限切れテスト`,
+        priority: "medium",
+        due_date: yesterday.toISOString(),
+      },
+    });
+    expect(createResponse.ok()).toBeTruthy();
+    const createdTask = await createResponse.json();
+
+    await page.goto("/");
+    await expect(page.getByText("Taska").first()).toBeVisible();
+
+    // タスクが表示されるまで待機
+    const taskText = page.getByText(`${prefix} 期限切れテスト`);
+    await expect(taskText).toBeVisible({ timeout: 10000 });
+
+    // 作成したタスク要素にスコープして期限バッジを検証
+    const taskItem = page.locator(`[data-testid="task-item-${createdTask.id}"]`);
+    const dueDateBadge = taskItem.locator("[aria-label*='期限']");
+    await expect(dueDateBadge).toBeVisible();
+    await expect(dueDateBadge).toContainText(/期限切れ/);
+
+    // 赤色のスタイルが適用されていることを確認（bg-red-100）
+    await expect(dueDateBadge).toHaveClass(/bg-red-100/);
+
+    await cleanupTestTasks(request, prefix);
+  });
+
+  test("期限間近タスク（24時間以内）は黄色で表示される", async ({ page, request }) => {
+    const prefix = "[E2E-期限間近]";
+    await cleanupTestTasks(request, prefix);
+
+    // 12時間後のタスクを作成
+    const soon = new Date();
+    soon.setHours(soon.getHours() + 12);
+
+    const createResponse = await request.post(`${API_URL}/api/tasks`, {
+      data: {
+        title: `${prefix} 期限間近テスト`,
+        priority: "medium",
+        due_date: soon.toISOString(),
+      },
+    });
+    expect(createResponse.ok()).toBeTruthy();
+    const createdTask = await createResponse.json();
+
+    await page.goto("/");
+    await expect(page.getByText("Taska").first()).toBeVisible();
+
+    // タスクが表示されるまで待機
+    const taskText = page.getByText(`${prefix} 期限間近テスト`);
+    await expect(taskText).toBeVisible({ timeout: 10000 });
+
+    // 作成したタスク要素にスコープして期限バッジを検証
+    const taskItem = page.locator(`[data-testid="task-item-${createdTask.id}"]`);
+    const dueDateBadge = taskItem.locator("[aria-label*='期限']");
+    await expect(dueDateBadge).toBeVisible();
+
+    // 黄色のスタイルが適用されていることを確認（bg-yellow-100）
+    await expect(dueDateBadge).toHaveClass(/bg-yellow-100/);
+
+    await cleanupTestTasks(request, prefix);
+  });
+
+  test("期限なしタスクはバッジが表示されない", async ({ page, request }) => {
+    const prefix = "[E2E-期限なし]";
+    await cleanupTestTasks(request, prefix);
+
+    // 期限なしのタスクを作成
+    const createResponse = await request.post(`${API_URL}/api/tasks`, {
+      data: {
+        title: `${prefix} 期限なしテスト`,
+        priority: "low",
+      },
+    });
+    expect(createResponse.ok()).toBeTruthy();
+    const createdTask = await createResponse.json();
+
+    await page.goto("/");
+    await expect(page.getByText("Taska").first()).toBeVisible();
+
+    // タスクが表示されるまで待機
+    const taskText = page.getByText(`${prefix} 期限なしテスト`);
+    await expect(taskText).toBeVisible({ timeout: 10000 });
+
+    // タスクアイテム内に期限バッジがないことを確認
+    const taskItem = page.locator(`[data-testid="task-item-${createdTask.id}"]`);
+    const dueDateBadge = taskItem.locator("[aria-label*='期限']");
+    await expect(dueDateBadge).not.toBeVisible();
+
+    await cleanupTestTasks(request, prefix);
+  });
+
+  test("完了したタスクは期限バッジが非表示になる", async ({ page, request }) => {
+    const prefix = "[E2E-完了期限]";
+    await cleanupTestTasks(request, prefix);
+
+    // 期限付きタスクを作成
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const createResponse = await request.post(`${API_URL}/api/tasks`, {
+      data: {
+        title: `${prefix} 完了期限テスト`,
+        priority: "medium",
+        due_date: tomorrow.toISOString(),
+      },
+    });
+    expect(createResponse.ok()).toBeTruthy();
+    const createdTask = await createResponse.json();
+
+    await page.goto("/");
+    await expect(page.getByText("Taska").first()).toBeVisible();
+
+    // タスクが表示されるまで待機
+    const taskText = page.getByText(`${prefix} 完了期限テスト`);
+    await expect(taskText).toBeVisible({ timeout: 10000 });
+
+    // 期限バッジが表示されていることを確認
+    const taskItem = page.locator(`[data-testid="task-item-${createdTask.id}"]`);
+    const dueDateBadge = taskItem.locator("[aria-label*='期限']");
+    await expect(dueDateBadge).toBeVisible();
+
+    // タスクを完了にする
+    const checkbox = taskItem.getByRole("checkbox");
+    await checkbox.click();
+
+    // 完了後、期限バッジが非表示になることを確認
+    await expect(dueDateBadge).not.toBeVisible({ timeout: 5000 });
+
+    await cleanupTestTasks(request, prefix);
+  });
+});
