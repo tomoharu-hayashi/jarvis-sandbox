@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -14,10 +16,15 @@ async def health_check():
     return {"status": "healthy", "version": "0.1.0"}
 
 
-# CORS設定（開発用）
+# CORS設定: 環境変数 CORS_ORIGINS で本番ドメインを指定可能
+# 例: CORS_ORIGINS=https://taska.example.com,https://taska.vercel.app
+default_origins = ["http://localhost:3000", "http://localhost:3001"]
+cors_origins_env = os.environ.get("CORS_ORIGINS", "")
+allowed_origins = cors_origins_env.split(",") if cors_origins_env else default_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
