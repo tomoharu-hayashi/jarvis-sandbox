@@ -34,6 +34,7 @@ export function getDueDateStatus(dueDate: string | null): DueDateStatus {
 
 /**
  * 期限を日本語の相対表記でフォーマット
+ * isPastを先に判定し、期限切れの場合は常に「期限切れ」を明示
  */
 export function formatDueDate(dueDate: string | null): string | null {
   if (!dueDate) return null;
@@ -41,16 +42,17 @@ export function formatDueDate(dueDate: string | null): string | null {
   const due = new Date(dueDate);
   const now = new Date();
 
+  // 期限切れを最優先で判定（今日の過去時刻も含む）
+  if (isPast(due)) {
+    return formatDistanceToNow(due, { locale: ja, addSuffix: true }) + "に期限切れ";
+  }
+
   if (isToday(due)) {
     return `今日 ${format(due, "HH:mm")}`;
   }
 
   if (isTomorrow(due)) {
     return `明日 ${format(due, "HH:mm")}`;
-  }
-
-  if (isPast(due)) {
-    return formatDistanceToNow(due, { locale: ja, addSuffix: true }) + "に期限切れ";
   }
 
   const hoursUntil = differenceInHours(due, now);

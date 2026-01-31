@@ -171,6 +171,7 @@ test.describe("期限表示", () => {
       },
     });
     expect(createResponse.ok()).toBeTruthy();
+    const createdTask = await createResponse.json();
 
     await page.goto("/");
     await expect(page.getByText("Taska").first()).toBeVisible();
@@ -179,9 +180,11 @@ test.describe("期限表示", () => {
     const taskText = page.getByText(`${prefix} 期限切れテスト`);
     await expect(taskText).toBeVisible({ timeout: 10000 });
 
-    // 期限切れバッジが表示されることを確認
-    const dueDateBadge = page.locator("[aria-label*='期限']").filter({ hasText: /期限切れ/ });
+    // 作成したタスク要素にスコープして期限バッジを検証
+    const taskItem = page.locator(`[data-testid="task-item-${createdTask.id}"]`);
+    const dueDateBadge = taskItem.locator("[aria-label*='期限']");
     await expect(dueDateBadge).toBeVisible();
+    await expect(dueDateBadge).toContainText(/期限切れ/);
 
     // 赤色のスタイルが適用されていることを確認（bg-red-100）
     await expect(dueDateBadge).toHaveClass(/bg-red-100/);
@@ -205,6 +208,7 @@ test.describe("期限表示", () => {
       },
     });
     expect(createResponse.ok()).toBeTruthy();
+    const createdTask = await createResponse.json();
 
     await page.goto("/");
     await expect(page.getByText("Taska").first()).toBeVisible();
@@ -213,8 +217,9 @@ test.describe("期限表示", () => {
     const taskText = page.getByText(`${prefix} 期限間近テスト`);
     await expect(taskText).toBeVisible({ timeout: 10000 });
 
-    // 期限バッジが表示されることを確認
-    const dueDateBadge = page.locator("[aria-label*='期限']").first();
+    // 作成したタスク要素にスコープして期限バッジを検証
+    const taskItem = page.locator(`[data-testid="task-item-${createdTask.id}"]`);
+    const dueDateBadge = taskItem.locator("[aria-label*='期限']");
     await expect(dueDateBadge).toBeVisible();
 
     // 黄色のスタイルが適用されていることを確認（bg-yellow-100）
