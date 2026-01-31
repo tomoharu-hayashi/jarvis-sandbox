@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Environment
+.env
+.env.local
+.env.prod
+
+# IDE
+.vscode/
+.idea/
+
+# JARVIS local state (optional: can be committed for testing)
+# .prompts/jarvis-state.local.md
+
+# Temporary
+*.log
+.jarvis-cancel
+log-**.jsonl
+log-**.html

@@ -11,26 +11,25 @@ AI アシスト付きのシンプルなタスク管理 Web アプリ。
 
 ## 技術スタック
 
-- **Frontend**: Next.js 15 (App Router) + TypeScript
-- **Styling**: Tailwind CSS + shadcn/ui
-- **Backend**: Next.js API Routes
-- **Database**: Neon (PostgreSQL) + Drizzle ORM
-- **AI**: Vercel AI SDK + OpenAI
-- **Infrastructure**: Vercel
+- **Backend**: FastAPI + Python 3.11+
+- **Database**: Firebase Firestore
+- **AI**: OpenAI GPT-4
+- **Infrastructure**: Vercel / Cloud Run
 
 ## ロードマップ
 
 ### Phase 1: MVP
 
-- [ ] タスク CRUD（作成・表示・更新・削除）
+- [x] タスク CRUD API（作成・表示・更新・削除）
+- [x] Firebase Firestore による永続化
 - [ ] シンプルなリスト UI
 - [ ] 完了/未完了の切り替え
 
 ### Phase 2: AI 機能
 
-- [ ] 自然言語でタスク入力
-- [ ] カテゴリ・優先度の自動判定
-- [ ] 次にやるべきタスクの提案
+- [x] 自然言語でタスク入力（API）
+- [x] 優先度の自動判定
+- [x] 次にやるべきタスクの提案 API
 
 ## 開発
 
@@ -40,6 +39,14 @@ make run     # 開発サーバー起動
 make test    # テスト実行
 make lint    # リント
 ```
+
+## 環境変数
+
+| 変数名 | 説明 | 必須 |
+|--------|------|------|
+| `USE_FIRESTORE` | `true`で Firestore 使用、それ以外でインメモリ | No |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Firebase サービスアカウント JSON パス | Firestore 使用時 |
+| `OPENAI_API_KEY` | OpenAI API キー | AI 機能使用時 |
 
 ## ライセンス
 
