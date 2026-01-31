@@ -5,6 +5,7 @@ import type {
   TaskStatus,
   TaskPriority,
   TaskUpdate,
+  ParseResponse,
 } from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -75,4 +76,19 @@ export async function deleteTask(id: string): Promise<void> {
   if (!res.ok) {
     throw new Error(`Failed to delete task: ${res.status}`);
   }
+}
+
+// 自然言語テキストを解析
+export async function parseTaskText(text: string): Promise<ParseResponse> {
+  const res = await fetch(`${API_BASE_URL}/api/tasks/parse`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to parse task: ${res.status}`);
+  }
+
+  return res.json();
 }

@@ -40,3 +40,17 @@ export interface TaskListResponse {
   limit: number;
   offset: number;
 }
+
+// 自然言語解析の結果
+export interface ParsedTask {
+  title: string;
+  description: string;
+  due_date: string | null;
+  priority: TaskPriority;
+}
+
+// 自然言語解析レスポンス
+export interface ParseResponse {
+  original_text: string;
+  parsed: ParsedTask;
+}
